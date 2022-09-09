@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { User } from './user/entities/user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthService } from './auth/auth.service';
+import { TodosModule } from './todos/todos.module';
+import { Todo } from './todos/entities/todo.entity';
 const { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME } = process.env;
 @Module({
   imports: [
