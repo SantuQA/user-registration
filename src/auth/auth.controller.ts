@@ -23,9 +23,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   @ApiBearerAuth()
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@Request() req:any) {
+    return req.user.id;
   } 
+
   /* @Post()
   @ApiCreatedResponse({ description: 'User Registration' })
   @ApiBody({ type: RegisterBody })

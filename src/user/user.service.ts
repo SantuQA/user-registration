@@ -15,6 +15,7 @@ export class UserService {
   ) {}
   async create(createUserDto: CreateUserDto) {
     const user = new User();
+    
     if (createUserDto.password !== createUserDto.retypedPassword) {
       throw new BadRequestException(['Passwords are not identical']);
     }

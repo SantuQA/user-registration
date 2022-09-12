@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   NotFoundException,
+  
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,6 +21,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { User } from './user.decorator';
 
 @ApiBearerAuth()
 @Controller('user')
@@ -28,8 +30,16 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserDto,@User() user) {
+    if (user.userType == 'ADMIN' ) {
+      console.log(user);
+      return this.userService.create(createUserDto);
+    } else {
+      throw new NotFoundException('You are not authorised for create uesr!');
+    }
+    
+    
+    //return this.userService.create(createUserDto);
     /* {
       "username": "santunew",
       "password": "passwrod",

@@ -25,6 +25,7 @@ import { Todo } from 'src/todos/entities/todo.entity';
         },
       }),
     }),
+    
   ],
   providers: [
     LocalStrategy,
