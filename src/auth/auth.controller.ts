@@ -4,6 +4,10 @@ import { JwtAuthGuard } from './auth-guard.jwt';
 import { AuthService } from './auth.service';
 import { ApiOkResponse, ApiUnauthorizedResponse,ApiCreatedResponse, ApiBody , ApiBearerAuth} from '@nestjs/swagger';
 import { LoginBody, LoginUserDto } from 'src/user/dto/login-user.dto';
+import { User } from 'src/user/entities/user.entity';
+import { UserCurrent } from 'src/user/user.decorator';
+import { LocalGuard } from './auth-guard.local';
+import { SessionGuard } from './session.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -11,7 +15,7 @@ export class AuthController {
   @Post('login')
   @ApiOkResponse({description:'User Login'})
   @ApiUnauthorizedResponse({description: 'Invalid credentials'})
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(LocalGuard)
   @ApiBody({ type: LoginUserDto })
   async login(@Request() req) {
     const token = await this.authService.generateToken(req.user);
@@ -20,12 +24,18 @@ export class AuthController {
       access_token: token,
     };
   }
-  @UseGuards(JwtAuthGuard)
   @Get('profile')
+  @UseGuards(SessionGuard)
   @ApiBearerAuth()
-  getProfile(@Request() req:any) {
-    return req.user.id;
+  getProfile(@Request() req) {
+    console.log(req.user);
+    return req.user;
   } 
+  @Get('/logout')
+  logout(@Request() req): any {
+    req.session.destroy();
+    return { msg: 'The user session has ended' }
+  }
 
   /* @Post()
   @ApiCreatedResponse({ description: 'User Registration' })

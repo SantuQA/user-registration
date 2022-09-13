@@ -21,7 +21,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     username: string, password: string
   ): Promise<any> {
     const user = await this.userRepository.findOne({
-      where: { username }
+      where: { username}
     });
 
     if (!user) {

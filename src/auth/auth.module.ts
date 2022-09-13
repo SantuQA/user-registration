@@ -12,9 +12,12 @@ import { LocalStrategy } from './local.strategy';
 import { TodosService } from 'src/todos/todos.service';
 import { TodosController } from 'src/todos/todos.controller';
 import { Todo } from 'src/todos/entities/todo.entity';
+import { SessionSerializer } from './session.serializer';
+import { User_Permission } from 'src/user/entities/user.permission.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([User_Permission]),
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forFeature([Todo]),
     JwtModule.registerAsync({
@@ -33,6 +36,7 @@ import { Todo } from 'src/todos/entities/todo.entity';
     AuthService,
     UserService,
     TodosService,
+    SessionSerializer
   ],
   controllers: [AuthController, UserController, TodosController],
   exports: [AuthService],

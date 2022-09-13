@@ -8,6 +8,7 @@ import {
   Delete,
   UseGuards,
   NotFoundException,
+  Request
   
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -21,21 +22,52 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { User } from './user.decorator';
+import { UserCurrent } from './user.decorator';
+import { SessionGuard } from 'src/auth/session.guard';
+import { UpdatePermissionDto } from './dto/update-user-permission';
 
 @ApiBearerAuth()
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(JwtAuthGuard)
+ 
+  @UseGuards(SessionGuard)
   @Post()
-  create(@Body() createUserDto: CreateUserDto,@User() user) {
+  create(@Body() createUserDto: CreateUserDto,@Request() req) {
+    const user = req.user;
+    //console.log(user);
     if (user.userType == 'ADMIN' ) {
-      console.log(user);
+      //console.log('ADMIN');
       return this.userService.create(createUserDto);
     } else {
+      //console.log('NOT ADMIN');
       throw new NotFoundException('You are not authorised for create uesr!');
+    }
+    
+    
+    //return this.userService.create(createUserDto);
+    /* {
+      "username": "santunew",
+      "password": "passwrod",
+      "retypedPassword": "password",
+      "firstName": "santu",
+      "lastName": "mondal",
+      "email": "santunew@gmail.com",
+      "userType": "A"
+    } */
+  }
+  @UseGuards(SessionGuard)
+  @Post('permission')
+  updateUserPermission(@Body() updatePermissionDto: UpdatePermissionDto,@Request() req) {
+    const user = req.user;
+    console.log(user);
+    if (user.userType == 'ADMIN' ) {
+      console.log('ADMIN');
+      return this.userService.createUserPermission(updatePermissionDto);
+    } else {
+      //console.log('NOT ADMIN');
+      throw new NotFoundException('You are not authorised make user permission!');
     }
     
     
