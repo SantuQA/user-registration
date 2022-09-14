@@ -8,111 +8,110 @@ import {
   Delete,
   UseGuards,
   NotFoundException,
-  Request
-  
+  UnauthorizedException,
+  Request,
+  HttpCode,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthGuard } from '@nestjs/passport';
-import { JwtAuthGuard } from 'src/auth/auth-guard.jwt';
 import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserCurrent } from './user.decorator';
 import { SessionGuard } from 'src/auth/session.guard';
 import { UpdatePermissionDto } from './dto/update-user-permission';
+import { USER_TYPES } from './role.enum';
 
 @ApiBearerAuth()
+@ApiTags('These are only for admin!')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
- 
   @UseGuards(SessionGuard)
   @Post()
-  create(@Body() createUserDto: CreateUserDto,@Request() req) {
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Create user' })
+  create(@Body() createUserDto: CreateUserDto, @Request() req) {
     const user = req.user;
-    //console.log(user);
-    if (user.userType == 'ADMIN' ) {
-      //console.log('ADMIN');
+    if (user.userType == 'ADMIN') {
       return this.userService.create(createUserDto);
     } else {
-      //console.log('NOT ADMIN');
-      throw new NotFoundException('You are not authorised for create uesr!');
+      throw new UnauthorizedException('You are not authorised!');
     }
-    
-    
-    //return this.userService.create(createUserDto);
-    /* {
-      "username": "santunew",
-      "password": "passwrod",
-      "retypedPassword": "password",
-      "firstName": "santu",
-      "lastName": "mondal",
-      "email": "santunew@gmail.com",
-      "userType": "A"
-    } */
   }
   @UseGuards(SessionGuard)
   @Post('permission')
-  updateUserPermission(@Body() updatePermissionDto: UpdatePermissionDto,@Request() req) {
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Update user permission' })
+  updateUserPermission(
+    @Body() updatePermissionDto: UpdatePermissionDto,
+    @Request() req,
+  ) {
     const user = req.user;
-    console.log(user);
-    if (user.userType == 'ADMIN' ) {
-      console.log('ADMIN');
+    if (user.userType == USER_TYPES.ADMIN) {
       return this.userService.createUserPermission(updatePermissionDto);
     } else {
-      //console.log('NOT ADMIN');
-      throw new NotFoundException('You are not authorised make user permission!');
+      throw new UnauthorizedException('You are not authorised!');
     }
-    
-    
-    //return this.userService.create(createUserDto);
-    /* {
-      "username": "santunew",
-      "password": "passwrod",
-      "retypedPassword": "password",
-      "firstName": "santu",
-      "lastName": "mondal",
-      "email": "santunew@gmail.com",
-      "userType": "A"
-    } */
   }
-
-  
   @Get()
-  @UseGuards(JwtAuthGuard)
-  findAll() {
-    return this.userService.findAll();
-  }
-
- 
-  @Get('/:id')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  findOne(@Param('id') id: string) {
-    const user = this.userService.findOne(id);
-    if (!user) {
-      throw new NotFoundException('user not found');
+  @UseGuards(SessionGuard)
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Get all users' })
+  findAll(@Request() req) {
+    const user = req.user;
+    if (user.userType == USER_TYPES.ADMIN) {
+      return this.userService.findAll();
+    } else {
+      throw new UnauthorizedException('You are not authorised!');
     }
-    return user;
   }
-
-  
+  @Get('/:id')
+  @UseGuards(SessionGuard)
+  @ApiBearerAuth()
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Get user by id' })
+  findOne(@Param('id') id: string, @Request() req) {
+    const user = req.user;
+    if (user.userType == USER_TYPES.ADMIN) {
+      const find_user = this.userService.findOne(id);
+      if (!find_user) {
+        throw new NotFoundException('user not found');
+      }
+      return find_user;
+    } else {
+      throw new UnauthorizedException('You are not authorised!');
+    }
+  }
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(id, updateUserDto);
+  @UseGuards(SessionGuard)
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Update user by id' })
+  update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @Request() req,
+  ) {
+    const user = req.user;
+    if (user.userType == USER_TYPES.ADMIN) {
+      return this.userService.update(id, updateUserDto);
+    } else {
+      throw new UnauthorizedException('You are not authorised!');
+    }
   }
-
-  
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
-    return this.userService.remove(id);
+  @UseGuards(SessionGuard)
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Remove a user by id' })
+  remove(@Param('id') id: string, @Request() req) {
+    const user = req.user;
+    if (user.userType == USER_TYPES.ADMIN) {
+      return this.userService.remove(id);
+    } else {
+      throw new UnauthorizedException('You are not authorised!');
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from "dotenv";
-import { DocumentBuilder,SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder,SwaggerDocumentOptions,SwaggerModule } from '@nestjs/swagger';
 import * as session from "express-session"
 import * as passport from "passport"
 async function bootstrap() {
@@ -19,13 +19,18 @@ async function bootstrap() {
   app.use(passport.initialize())
   app.use(passport.session())
   const config = new DocumentBuilder()
-  .setTitle('UserAuth')
-  .setDescription('user API description')
+  .setTitle('DEMO PROJECT')
+  .setDescription('REST API')
   .setVersion('1.0')
-  .addTag('users')
   .addBearerAuth()
   .build();
-const document = SwaggerModule.createDocument(app, config);
+  const options: SwaggerDocumentOptions =  {
+    operationIdFactory: (
+      controllerKey: string,
+      methodKey: string
+    ) => methodKey
+  };
+const document = SwaggerModule.createDocument(app, config,options);
 SwaggerModule.setup('api', app, document);
   await app.listen(3000);
   console.log(`Application is running on: ${await app.getUrl()}`);

@@ -30,6 +30,8 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.1.2",
     "@nestjs/typeorm": "^9.0.1",
+    "@nestjsx/crud": "^5.0.0-alpha.3",
+    "@nestjsx/crud-typeorm": "^5.0.0-alpha.3",
     "@types/dotenv": "^8.2.0",
     "bcrypt": "^5.0.1",
     "class-transformer": "^0.5.1",

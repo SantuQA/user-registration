@@ -1,12 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable,NotFoundException } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { MongoRepository, ObjectID } from 'typeorm';
+import { MongoRepository} from 'typeorm';
 import { User_Permission } from './entities/user.permission.entity';
 import { UpdatePermissionDto } from './dto/update-user-permission';
+import { USER_TYPES } from './role.enum';
+import { ObjectID } from 'mongodb';
+
 
 @Injectable()
 export class UserService {
@@ -20,7 +23,6 @@ export class UserService {
   async create(createUserDto: CreateUserDto) {
     const user = new User();
     const permission = new User_Permission();
-    
     if (createUserDto.password !== createUserDto.retypedPassword) {
       throw new BadRequestException(['Passwords are not identical']);
     }
@@ -30,29 +32,22 @@ export class UserService {
     const existingUserName = await this.userRepository.findOne({
       where: { username: createUserDto.username },
     });
-
     if (existingUserEmail || existingUserName) {
       throw new BadRequestException(['username or email is already taken']);
     }
-
     user.username = createUserDto.username;
     user.password = await this.authService.hashPassword(createUserDto.password);
     user.email = createUserDto.email;
     user.firstName = createUserDto.firstName;
     user.lastName = createUserDto.lastName;
-    user.userType = 'USER';
-    // if (createUserDto.userType) {
-    //   user.userType = createUserDto.userType;
-    // } else {
-    //   user.userType = 'USER';
-    // }
+    user.userType = USER_TYPES.USER;
     const saveUser = await this.userRepository.save(user);
     permission.userId = saveUser._id.toString();
     permission.read = true;
     permission.write = false;
     permission.modify = false;
     permission.delete = false;
-    await this.userPermissionRepository.save(permission)
+    await this.userPermissionRepository.save(permission);
 
     return {
       ...(saveUser),
@@ -60,13 +55,44 @@ export class UserService {
     };
   }
   async createUserPermission(updatePermissionDto: UpdatePermissionDto){
-    //console.log(updatePermissionDto);
-    const property = await this.userRepository.findOneById(updatePermissionDto.userId);
-    console.log(property);
-    /* return this.userRepository.save({
-      ...property, // existing fields
-      ...updatePermissionDto, // updated fields
-    }); */
+    const user = new User();
+    const permission = new User_Permission();
+    let updateUserRole :string; 
+    const idByteCheck = ObjectID.isValid(updatePermissionDto.userId);
+    if(!idByteCheck){
+      throw new BadRequestException(['not a valid id']);
+    }
+    const user_master = await this.userRepository.findOneById(updatePermissionDto.userId);
+    if (!user_master) {
+      throw new NotFoundException(['user does not exist!']);
+    }
+    const user_permission = await this.userPermissionRepository.findOne({
+      where: { userId: updatePermissionDto.userId },
+    });
+    permission.read = updatePermissionDto.read;
+    permission.write = updatePermissionDto.write;
+    permission.modify = updatePermissionDto.modify;
+    permission.delete = updatePermissionDto.delete;
+
+    if(permission.read  == true && permission.write == true && permission.modify == true && permission.delete == true){
+      updateUserRole = USER_TYPES.ADMIN;
+    }else if(permission.read  == true && permission.write == false && permission.modify == true && permission.delete == false){
+      updateUserRole = USER_TYPES.EDITOR;
+    }else if(permission.read  == true && permission.write == false && permission.modify == false && permission.delete == false){
+      updateUserRole = USER_TYPES.USER;
+    }
+    user.userType = updateUserRole;
+    const updateUserMaster = this.userRepository.save({
+      ...user_master, // existing fields
+      ...user, // updated fields
+    });
+    const updateUserPermission = this.userRepository.save({
+      ...user_permission, // existing fields
+      ...permission, // updated fields
+    });
+    if(updateUserMaster && updateUserPermission){
+      return "User Role Update Successfully"
+    }
   }
 
   async findAll() {

@@ -14,9 +14,13 @@ import { TodosController } from 'src/todos/todos.controller';
 import { Todo } from 'src/todos/entities/todo.entity';
 import { SessionSerializer } from './session.serializer';
 import { User_Permission } from 'src/user/entities/user.permission.entity';
+import { ProductsService } from '../ecommerce/products/products.service';
+import { ProductsController } from '../ecommerce/products/products.controller';
+import { ProductEntity } from 'src/ecommerce/products/entities/product.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([ProductEntity]),
     TypeOrmModule.forFeature([User_Permission]),
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forFeature([Todo]),
@@ -36,9 +40,10 @@ import { User_Permission } from 'src/user/entities/user.permission.entity';
     AuthService,
     UserService,
     TodosService,
-    SessionSerializer
+    SessionSerializer,
+    ProductsService
   ],
-  controllers: [AuthController, UserController, TodosController],
+  controllers: [AuthController, UserController, TodosController,ProductsController],
   exports: [AuthService],
 })
 export class AuthModule {}
