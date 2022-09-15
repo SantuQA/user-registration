@@ -17,10 +17,11 @@ import { User_Permission } from 'src/user/entities/user.permission.entity';
 import { ProductsService } from '../ecommerce/products/products.service';
 import { ProductsController } from '../ecommerce/products/products.controller';
 import { ProductEntity } from 'src/ecommerce/products/entities/product.entity';
+import { ACCESSS_CONTROL } from 'src/user/entities/access.control.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ProductEntity]),
+    TypeOrmModule.forFeature([ProductEntity,ACCESSS_CONTROL]),
     TypeOrmModule.forFeature([User_Permission]),
     TypeOrmModule.forFeature([User]),
     TypeOrmModule.forFeature([Todo]),

@@ -6,8 +6,10 @@ import {
   Entity,
   ObjectID,
   ObjectIdColumn,
+  OneToMany,
   UpdateDateColumn,
 } from 'typeorm';
+import { ACCESSS_CONTROL } from './access.control.entity';
 
 @Entity()
 export class User {
@@ -36,6 +38,8 @@ export class User {
   @Column()
   @Expose()
   userType: string;
+  @OneToMany(() => ACCESSS_CONTROL,access_control => access_control.user)
+  access_controls : ACCESSS_CONTROL[];
   @CreateDateColumn()
   created_at: Date;
 

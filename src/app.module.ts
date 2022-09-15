@@ -8,6 +8,7 @@ import 'dotenv/config';
 import { ProductEntity } from './ecommerce/products/entities/product.entity';
 import { CartEntity } from './ecommerce/cart/cart.entity';
 import { OrderEntity } from './ecommerce/order/order.entity';
+import { ACCESSS_CONTROL } from './user/entities/access.control.entity';
 const { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME } = process.env;
 @Module({
   imports: [
@@ -18,7 +19,7 @@ const { DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME } = process.env;
       username: DB_USER,
       password: DB_PASSWORD,
       database: DB_NAME,
-      entities: [User,Todo,ProductEntity,CartEntity,OrderEntity],
+      entities: [User,Todo,ProductEntity,CartEntity,OrderEntity,ACCESSS_CONTROL],
       synchronize: false,
       useUnifiedTopology: true,
       authMechanism: 'DEFAULT',

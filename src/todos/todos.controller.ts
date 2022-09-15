@@ -1,17 +1,26 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, HttpCode, Request } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AccessController } from 'src/user/role.enum';
+import { SessionGuard } from 'src/auth/session.guard';
 
 @Controller('todos')
 @ApiTags('Todos api')
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
+  getControllerName(){
+    return AccessController.TODO_CONTROLLER;
+  }
 
+  @UseGuards(SessionGuard)
   @Post()
-  create(@Body() createTodoDto: CreateTodoDto) {
-    return this.todosService.create(createTodoDto);
+  @HttpCode(201)
+  @ApiOperation({ summary: 'Create todo' })
+  create(@Body() createTodoDto: CreateTodoDto, @Request() req) {
+    const user = req.user;
+    return this.todosService.create(createTodoDto,user,this.getControllerName());
   }
 
   @Get()

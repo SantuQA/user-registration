@@ -7,8 +7,10 @@ import { User } from './entities/user.entity';
 import { MongoRepository} from 'typeorm';
 import { User_Permission } from './entities/user.permission.entity';
 import { UpdatePermissionDto } from './dto/update-user-permission';
-import { USER_TYPES } from './role.enum';
+import { AccessController, USER_TYPES } from './role.enum';
 import { ObjectID } from 'mongodb';
+import { UpdateUserControllerAccessDto } from './dto/update-user-controller-accsess';
+import { ACCESSS_CONTROL } from './entities/access.control.entity';
 
 
 @Injectable()
@@ -18,7 +20,9 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: MongoRepository<User>,
     @InjectRepository(User_Permission)
-    private readonly userPermissionRepository: MongoRepository<User_Permission>
+    private readonly userPermissionRepository: MongoRepository<User_Permission>,
+    @InjectRepository(ACCESSS_CONTROL)
+    private readonly userAccessControllerRepository: MongoRepository<ACCESSS_CONTROL>
   ) {}
   async create(createUserDto: CreateUserDto) {
     const user = new User();
@@ -94,13 +98,43 @@ export class UserService {
       return "User Role Update Successfully"
     }
   }
+  async updateUserControllerAccess(updateUserControllerAccessDto : UpdateUserControllerAccessDto){
+    const idByteCheck = ObjectID.isValid(updateUserControllerAccessDto.userId);
+    if(!idByteCheck){
+      throw new BadRequestException(['not a valid id']);
+    }
+    const user_master = await this.userRepository.findOneById(updateUserControllerAccessDto.userId);
+    if (!user_master) {
+      throw new NotFoundException(['user does not exist!']);
+    }
+    let access_array =[];
+    access_array = updateUserControllerAccessDto.access_controller;
+    let cnt = 0;
+    for (let i = 0; i < access_array.length; i++) {
+      const element = access_array[i];
+      const existingPermission = await this.userAccessControllerRepository.findOne({
+        where: { controllerName: element },
+      });
+      if (existingPermission) {
+        return `${element} permission already granted`;
+      } else {
+        await this.userAccessControllerRepository.save({controllerName:element,userId:user_master._id})
+        cnt+=1;
+      }
+    }
+    if (cnt >1) {
+      return `all permission granted`;
+    } else {
+      return `permission granted`;
+    }
+  }
 
   async findAll() {
-    return await await this.userRepository.find();
+    return await this.userRepository.find();
   }
 
   async findOne(id: string) {
-    return await this.userRepository.findOneById(id);
+   return await this.userRepository.findOneById(id);
   }
   async findOneByUsername(username: string) {
     const existingUserName = await this.userRepository.findOne({
@@ -127,5 +161,8 @@ export class UserService {
       throw new BadRequestException(['userid not valid!']);
     }
     return await this.userRepository.remove(user);
+  }
+  async findAllControllerName(){
+    return  AccessController;
   }
 }

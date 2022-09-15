@@ -23,13 +23,20 @@ import {
 } from '@nestjs/swagger';
 import { SessionGuard } from 'src/auth/session.guard';
 import { UpdatePermissionDto } from './dto/update-user-permission';
-import { USER_TYPES } from './role.enum';
+import { AccessController, USER_TYPES } from './role.enum';
+import { UpdateUserControllerAccessDto } from './dto/update-user-controller-accsess';
 
 @ApiBearerAuth()
 @ApiTags('These are only for admin!')
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) {
+   
+  }
+  getControllerName(){
+    return AccessController.USER_CONTROLLER;
+  }
+ 
   @UseGuards(SessionGuard)
   @Post()
   @HttpCode(201)
@@ -57,11 +64,28 @@ export class UserController {
       throw new UnauthorizedException('You are not authorised!');
     }
   }
+  @UseGuards(SessionGuard)
+  @Post('accesscontrol/:id')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Update user access controller' })
+  updateUserControllerAccess(
+    @Body() updateUserControllerAccessDto: UpdateUserControllerAccessDto,
+    @Request() req,
+  ) {
+    console.log(updateUserControllerAccessDto);
+    const user = req.user;
+    if (user.userType == USER_TYPES.ADMIN) {
+      return this.userService.updateUserControllerAccess(updateUserControllerAccessDto);
+    } else {
+      throw new UnauthorizedException('You are not authorised!');
+    }
+  }
   @Get()
   @UseGuards(SessionGuard)
   @HttpCode(200)
   @ApiOperation({ summary: 'Get all users' })
   findAll(@Request() req) {
+    console.log(this.getControllerName());
     const user = req.user;
     if (user.userType == USER_TYPES.ADMIN) {
       return this.userService.findAll();
@@ -110,6 +134,19 @@ export class UserController {
     const user = req.user;
     if (user.userType == USER_TYPES.ADMIN) {
       return this.userService.remove(id);
+    } else {
+      throw new UnauthorizedException('You are not authorised!');
+    }
+  }
+  @Post('getallcontroller')
+  @UseGuards(SessionGuard)
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Get all controller' })
+  findAllController(@Request() req) {
+    const user = req.user;
+    if (user.userType == USER_TYPES.ADMIN) {
+      //return "hi";
+      return this.userService.findAllControllerName();
     } else {
       throw new UnauthorizedException('You are not authorised!');
     }
