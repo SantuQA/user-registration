@@ -5,9 +5,10 @@ import { AuthService } from 'src/auth/auth.service';
 import { Todo } from './entities/todo.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ACCESSS_CONTROL } from 'src/user/entities/access.control.entity';
+import { User } from '../user/entities/user.entity';
 
 @Module({
-  imports:[TypeOrmModule.forFeature([Todo,ACCESSS_CONTROL])],
+  imports:[TypeOrmModule.forFeature([Todo,ACCESSS_CONTROL,User])],
   controllers: [TodosController],
   providers: [TodosService,AuthService],
   exports:[TodosService]

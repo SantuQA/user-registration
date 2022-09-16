@@ -38,7 +38,7 @@ export class User {
   @Column()
   @Expose()
   userType: string;
-  @OneToMany(() => ACCESSS_CONTROL,access_control => access_control.user)
+  @OneToMany(() => ACCESSS_CONTROL,(access_control) => access_control.user,{cascade:true})
   access_controls : ACCESSS_CONTROL[];
   @CreateDateColumn()
   created_at: Date;

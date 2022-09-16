@@ -20,7 +20,9 @@ export class TodosController {
   @ApiOperation({ summary: 'Create todo' })
   create(@Body() createTodoDto: CreateTodoDto, @Request() req) {
     const user = req.user;
-    return this.todosService.create(createTodoDto,user,this.getControllerName());
+    const controllername = this.getControllerName();
+    //console.log(user);
+    return this.todosService.create(createTodoDto,user,controllername);
   }
 
   @Get()

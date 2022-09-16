@@ -72,7 +72,7 @@ export class UserController {
     @Body() updateUserControllerAccessDto: UpdateUserControllerAccessDto,
     @Request() req,
   ) {
-    console.log(updateUserControllerAccessDto);
+    //console.log(updateUserControllerAccessDto);
     const user = req.user;
     if (user.userType == USER_TYPES.ADMIN) {
       return this.userService.updateUserControllerAccess(updateUserControllerAccessDto);
