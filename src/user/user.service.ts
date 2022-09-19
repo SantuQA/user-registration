@@ -146,7 +146,7 @@ export class UserService {
           controllerName: element,
           userId: user_master._id,
         });
-        cnt+=1;
+        cnt += 1;
       }
     }
     //return `permission granted`;
@@ -156,11 +156,42 @@ export class UserService {
       return `permission already granted`;
     }
   }
-
+  async removeUserControllerAccess(
+    updateUserControllerAccessDto: UpdateUserControllerAccessDto,
+  ) {
+    const idByteCheck = ObjectID.isValid(updateUserControllerAccessDto.userId);
+    if (!idByteCheck) {
+      throw new BadRequestException(['not a valid id']);
+    }
+    const user_master = await this.userRepository.findOneById(
+      updateUserControllerAccessDto.userId,
+    );
+    if (!user_master) {
+      throw new NotFoundException(['user does not exist!']);
+    }
+    let access_array = [];
+    access_array = updateUserControllerAccessDto.access_controller;
+    for (let i = 0; i < access_array.length; i++) {
+      const element = access_array[i];
+      var filter = {
+        $and: [{ userId: user_master._id }, { controllerName: element }],
+      };
+      const existingPermission =
+        await this.userAccessControllerRepository.findBy(filter);
+      let did: ObjectID;
+      if (existingPermission.length > 0) {
+        did = existingPermission[0]._id;
+        const dpermission =
+          await this.userAccessControllerRepository.findOneById(did);
+        return await this.userAccessControllerRepository.remove(dpermission);
+      } else {
+        return `permission not found!`;
+      }
+    }
+  }
   async findAll() {
     return await this.userRepository.find();
   }
-
   async findOne(id: string) {
     return await this.userRepository.findOneById(id);
   }
@@ -173,7 +204,6 @@ export class UserService {
     }
     return existingUserName;
   }
-
   async update(id: string, updateUserDto: UpdateUserDto) {
     const property = await this.userRepository.findOneById(id);
 
@@ -182,7 +212,6 @@ export class UserService {
       ...updateUserDto, // updated fields
     });
   }
-
   async remove(id: string) {
     const user = await this.userRepository.findOneById(id);
     if (!user) {
