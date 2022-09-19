@@ -95,7 +95,21 @@ export class UserController {
       throw new UnauthorizedException('You are not authorised!');
     }
   }
-  
+  @UseGuards(SessionGuard)
+  @Post('viewaccesscontrol/:id')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'View user access controller by Id' })
+  viewControllerAccessById(
+    @Param('id') id : string,
+    @Request() req,
+  ) {
+    const user = req.user;
+    if (user.userType == USER_TYPES.ADMIN) {
+      return this.userService.viewUserControllerAccessByID(id);
+    } else {
+      throw new UnauthorizedException('You are not authorised!');
+    }
+  }
   @Get()
   @UseGuards(SessionGuard)
   @HttpCode(200)

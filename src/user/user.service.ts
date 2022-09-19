@@ -189,6 +189,24 @@ export class UserService {
       }
     }
   }
+  async viewUserControllerAccessByID(id: string){
+    const idByteCheck = ObjectID.isValid(id);
+    if (!idByteCheck) {
+      throw new BadRequestException(['not a valid id']);
+    }
+    const user_master = await this.userRepository.findOneById(
+      id,
+    );
+    if (!user_master) {
+      throw new NotFoundException(['user does not exist!']);
+    }
+    var filter = {
+      where: { userId: user_master._id },
+    };
+    const list =  await this.userAccessControllerRepository.findBy(filter);
+    return list;
+    
+  }
   async findAll() {
     return await this.userRepository.find();
   }
